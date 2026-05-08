@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ratings Org Insights Prototype</title>
+  <style>
+    :root {
+      --bg: #f4f6fa;
+      --panel: #ffffff;
+      --panel-2: #fafbfe;
+      --border: #d9dfeb;
+      --text: #253041;
+      --muted: #667389;
+      --brand: #241860;
+      --brand-2: #4153b3;
+      --blue: #2e6bff;
+      --green: #178248;
+      --red: #c63b35;
+      --amber: #9a6a00;
+      --shadow: 0 1px 2px rgba(20,33,61,0.08);
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+      color: var(--text);
+      background: var(--bg);
+    }
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+    aside {
+      background: #fff;
+      padding: 0;
+    }
+    .brand {
+      padding: 19px 18px 11px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--brand);
+    }
+    .brand-row {
+      display: flex; gap: 8px; align-items: center;
+      font-weight: 700; color: var(--brand);
+    }
+    .brand-badge {
+      background: #fff;
+      color: #000;
+      border-radius: 4px;
+      padding: 1px 4px 2px 4px;
+      font-size: 12px;
+      font-weight: 600;
+      position: relative;
+      top: -3px;
+    }
+    .nav-section-title {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 16px 18px 8px;
+    }
+    .nav-a {
+      display: block;
+      padding: 10px 18px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+    }
+    .nav-a:hover { background: #f7f8fd; }
+    .nav-a.active {
+      background: #eef1fd;
+      border-left-color: var(--brand-2);
+      font-weight: 600;
+      color: var(--brand);
+    }
+    main { min-width: 0; }
+    .topbar {
+      height: 58px;
+      background: var(--brand);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-shadow: var(--shadow);
+    }
+    .topbar .right { font-size: 13px; opacity: .92; }
+    .page {
+      padding: 18px;
+      display: none;
+      gap: 16px;
+    }
+    .page {
+      border-left: 1px solid var(--border);
+    }
+    .page.active { display: grid; }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    h1, h2, h3 { margin: 0; font-weight: 500; }
+    h1 { font-size: 32px; font-weight: 500; }
+    .subtitle { color: var(--muted); margin-top: 6px; font-size: 14px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    button, .button {
+      background: var(--blue);
+      color: #fff;
+      border: 1px solid var(--blue);
+      border-radius: 6px;
+      padding: 9px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button.secondary, .button.secondary {
+      background: #fff;
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    .filters-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 2fr) repeat(5, minmax(130px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input[type="text"], select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 9px 10px;
+      background: #fff;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .chip.active {
+      background: #eef1fd;
+      border-color: #cbd6ff;
+      color: var(--brand);
+      font-weight: 600;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      background: linear-gradient(180deg, #fff, #f9fbff);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { font-size: 24px; font-weight: 700; margin-top: 8px; }
+    .layout-2 {
+      display: grid;
+      grid-template-columns: minmax(640px, 1.5fr) minmax(360px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 10px 10px;
+      border-bottom: 1px solid #edf0f6;
+      font-size: 13px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      color: var(--muted);
+      position: sticky;
+      top: 0;
+      background: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    tbody tr:hover { background: #fafcff; }
+    tbody tr.clickable { cursor: pointer; }
+    .table-wrap { max-height: 560px; overflow: auto; }
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .01em;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .badge-active, .badge-yes, .badge-high { background: #e8f7ef; color: var(--green); border-color: #bfe7ce; }
+    .badge-inactive, .badge-no, .badge-none { background: #faeceb; color: var(--red); border-color: #f2cbc9; }
+    .badge-medium { background: #fff2da; color: var(--amber); border-color: #f0d59c; }
+    .badge-low { background: #eef4ff; color: #2b61d7; border-color: #d7e3ff; }
+    .badge-suspended { background: #fff2da; color: var(--amber); border-color: #f0d59c; }
+    .muted { color: var(--muted); }
+    .linkish { color: var(--blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+    .detail-header {
+      display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .detail-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 16px;
+      margin: 12px 0 16px;
+    }
+    .meta-item { padding: 8px 0; border-bottom: 1px solid #f0f2f7; }
+    .meta-label { font-size: 12px; color: var(--muted); }
+    .meta-value { margin-top: 5px; font-size: 14px; font-weight: 600; }
+    .section-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .section-tab {
+      border: 1px solid var(--border); background: #fff; border-radius: 6px; padding: 7px 10px; font-size: 12px; cursor: pointer;
+    }
+    .section-tab.active { background: #eef1fd; border-color: #cad3ff; color: var(--brand); font-weight: 700; }
+    .subsection { display: none; }
+    .subsection.active { display: block; }
+    .row-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+    .two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
+    .feature-layout { display: grid; grid-template-columns: minmax(280px, 340px) 1fr; gap: 16px; }
+    .list-panel { max-height: 680px; overflow: auto; }
+    .item-list { display: grid; gap: 8px; }
+    .item-card {
+      border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: #fff; cursor: pointer;
+    }
+    .item-card.active { border-color: #b9c8ff; background: #f7f9ff; }
+    .item-card-title { font-weight: 700; }
+    .item-card-desc { margin-top: 6px; font-size: 13px; color: var(--muted); }
+    .split-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+    .mini-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+    .mini-stat { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+    .mini-stat .n { font-weight: 700; }
+    .empty { padding: 18px; text-align: center; color: var(--muted); border: 1px dashed var(--border); border-radius: 8px; background: #fcfdff; }
+    .footer-note { color: var(--muted); font-size: 12px; }
+    @media (max-width: 1200px) {
+      .filters-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+      .layout-2, .two-col, .feature-layout { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 840px) {
+      .app { grid-template-columns: 1fr; }
+      aside { display: none; }
+      .page { padding: 12px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .detail-meta { grid-template-columns: 1fr; }
+      .filters-grid { grid-template-columns: 1fr; }
+    }
+
+ul.nav {
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+    padding: 0 11px;
+    font-size: 14px;
+}
+
+ul.nav .nav-item {
+    padding: 2px 0;
+}
+
+ul.nav .nav-item a.nav-link.active {
+    color: #0056b3;
+    background-color: #e0e0e0;
+}
+
+ul.nav .nav-item a.nav-link {
+    color: #000;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 50ms ease-in;
+}
+
+ul.nav .nav-link {
+    display: block;
+    padding: .5rem 1rem;
+    text-decoration: none;
+}
+
+ul.nav .nav-item a i {
+    position: relative;
+    top: 1px;
+    left: -4px;
+}
+
+ul.nav .nav-link i {
+    padding-right: 6px;
+}
+
+ul.nav .nav-item a.nav-link:hover {
+    color: #0056b3;
+    background-color: #e0e0e0;
+}
+
+ul.nav .subnav {
+    padding: 5px 0;
+}
+ul.nav .navbar-nav {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+}
+
+ul.nav .subnav li.nav-item {
+    margin: 0 auto 5px;
+    width: 80%;
+}
+
+ul.nav .subnav li.nav-item a {
+    padding: 5px 10px;
+    margin-bottom: -5px;
+    border-radius: 8px;
+    transition: all 50ms ease-in;
+    width: 100%;
+    display: inline-block;
+}
+
+ul.nav .subnav li a {
+    font-weight: 400;
+    color: #333;
+    opacity: .85;
+    text-decoration: none;
+}
+
+ul.nav .subnav li.nav-item a:hover {
+    background-color: #e0e0e0;
+}
+
+ul.nav .subnav .nav-item.active a {
+    color: #0056b3;
+    background-color: #e0e0e0;
+}
+
+.collapse {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.25s ease;
+}
+
+.collapse:not(.show) {
+    display: none;
+}
+
+#orgTable th:nth-child(9),
+#orgTable th:nth-child(10),
+#orgTable td:nth-child(9),
+#orgTable td:nth-child(10) {
+  display: none;
+}
+
+  </style>
+  
+  <style>@import url("https://p.typekit.net/p.css?s=1&k=omo1ire&ht=tk&f=32893.32894.32895.32896.32897.32898.32899.32900.32901.32902.32903.32904.32905.32906.32907.32908&a=82278348&app=typekit&e=css");@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/15b22b/00000000000000007735af7b/30/l?subset_id=2&fvd=n2&v=3") format("woff2"),url("https://use.typekit.net/af/15b22b/00000000000000007735af7b/30/d?subset_id=2&fvd=n2&v=3") format("woff"),url("https://use.typekit.net/af/15b22b/00000000000000007735af7b/30/a?subset_id=2&fvd=n2&v=3") format("opentype");font-display:auto;font-style:normal;font-weight:200;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/f55d4d/00000000000000007735af7e/30/l?subset_id=2&fvd=i2&v=3") format("woff2"),url("https://use.typekit.net/af/f55d4d/00000000000000007735af7e/30/d?subset_id=2&fvd=i2&v=3") format("woff"),url("https://use.typekit.net/af/f55d4d/00000000000000007735af7e/30/a?subset_id=2&fvd=i2&v=3") format("opentype");font-display:auto;font-style:italic;font-weight:200;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/0371ef/00000000000000007735af84/30/l?subset_id=2&fvd=n3&v=3") format("woff2"),url("https://use.typekit.net/af/0371ef/00000000000000007735af84/30/d?subset_id=2&fvd=n3&v=3") format("woff"),url("https://use.typekit.net/af/0371ef/00000000000000007735af84/30/a?subset_id=2&fvd=n3&v=3") format("opentype");font-display:auto;font-style:normal;font-weight:300;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/f0932b/00000000000000007735af8a/30/l?subset_id=2&fvd=i3&v=3") format("woff2"),url("https://use.typekit.net/af/f0932b/00000000000000007735af8a/30/d?subset_id=2&fvd=i3&v=3") format("woff"),url("https://use.typekit.net/af/f0932b/00000000000000007735af8a/30/a?subset_id=2&fvd=i3&v=3") format("opentype");font-display:auto;font-style:italic;font-weight:300;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/a727c9/00000000000000007735af8e/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff2"),url("https://use.typekit.net/af/a727c9/00000000000000007735af8e/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff"),url("https://use.typekit.net/af/a727c9/00000000000000007735af8e/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("opentype");font-display:auto;font-style:normal;font-weight:400;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/eab1a9/00000000000000007735af92/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i4&v=3") format("woff2"),url("https://use.typekit.net/af/eab1a9/00000000000000007735af92/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i4&v=3") format("woff"),url("https://use.typekit.net/af/eab1a9/00000000000000007735af92/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i4&v=3") format("opentype");font-display:auto;font-style:italic;font-weight:400;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/46ebd4/00000000000000007735af97/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n5&v=3") format("woff2"),url("https://use.typekit.net/af/46ebd4/00000000000000007735af97/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n5&v=3") format("woff"),url("https://use.typekit.net/af/46ebd4/00000000000000007735af97/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n5&v=3") format("opentype");font-display:auto;font-style:normal;font-weight:500;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/7ec96f/00000000000000007735af9b/30/l?subset_id=2&fvd=i5&v=3") format("woff2"),url("https://use.typekit.net/af/7ec96f/00000000000000007735af9b/30/d?subset_id=2&fvd=i5&v=3") format("woff"),url("https://use.typekit.net/af/7ec96f/00000000000000007735af9b/30/a?subset_id=2&fvd=i5&v=3") format("opentype");font-display:auto;font-style:italic;font-weight:500;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/934faf/00000000000000007735af9e/30/l?subset_id=2&fvd=i6&v=3") format("woff2"),url("https://use.typekit.net/af/934faf/00000000000000007735af9e/30/d?subset_id=2&fvd=i6&v=3") format("woff"),url("https://use.typekit.net/af/934faf/00000000000000007735af9e/30/a?subset_id=2&fvd=i6&v=3") format("opentype");font-display:auto;font-style:italic;font-weight:600;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/3a50ac/00000000000000007735afa2/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n6&v=3") format("woff2"),url("https://use.typekit.net/af/3a50ac/00000000000000007735afa2/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n6&v=3") format("woff"),url("https://use.typekit.net/af/3a50ac/00000000000000007735afa2/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n6&v=3") format("opentype");font-display:auto;font-style:normal;font-weight:600;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/d03d2a/00000000000000007735afa6/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i7&v=3") format("woff2"),url("https://use.typekit.net/af/d03d2a/00000000000000007735afa6/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i7&v=3") format("woff"),url("https://use.typekit.net/af/d03d2a/00000000000000007735afa6/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i7&v=3") format("opentype");font-display:auto;font-style:italic;font-weight:700;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/81cbd6/00000000000000007735afa9/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff2"),url("https://use.typekit.net/af/81cbd6/00000000000000007735afa9/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("woff"),url("https://use.typekit.net/af/81cbd6/00000000000000007735afa9/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3") format("opentype");font-display:auto;font-style:normal;font-weight:700;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/4d5bd3/00000000000000007735afad/30/l?subset_id=2&fvd=n8&v=3") format("woff2"),url("https://use.typekit.net/af/4d5bd3/00000000000000007735afad/30/d?subset_id=2&fvd=n8&v=3") format("woff"),url("https://use.typekit.net/af/4d5bd3/00000000000000007735afad/30/a?subset_id=2&fvd=n8&v=3") format("opentype");font-display:auto;font-style:normal;font-weight:800;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/245bee/00000000000000007735afaf/30/l?subset_id=2&fvd=i8&v=3") format("woff2"),url("https://use.typekit.net/af/245bee/00000000000000007735afaf/30/d?subset_id=2&fvd=i8&v=3") format("woff"),url("https://use.typekit.net/af/245bee/00000000000000007735afaf/30/a?subset_id=2&fvd=i8&v=3") format("opentype");font-display:auto;font-style:italic;font-weight:800;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/ff0f34/00000000000000007735afb2/30/l?subset_id=2&fvd=i9&v=3") format("woff2"),url("https://use.typekit.net/af/ff0f34/00000000000000007735afb2/30/d?subset_id=2&fvd=i9&v=3") format("woff"),url("https://use.typekit.net/af/ff0f34/00000000000000007735afb2/30/a?subset_id=2&fvd=i9&v=3") format("opentype");font-display:auto;font-style:italic;font-weight:900;font-stretch:normal;}@font-face {font-family:"proxima-soft";src:url("https://use.typekit.net/af/8611c0/00000000000000007735afb7/30/l?subset_id=2&fvd=n9&v=3") format("woff2"),url("https://use.typekit.net/af/8611c0/00000000000000007735afb7/30/d?subset_id=2&fvd=n9&v=3") format("woff"),url("https://use.typekit.net/af/8611c0/00000000000000007735afb7/30/a?subset_id=2&fvd=n9&v=3") format("opentype");font-display:auto;font-style:normal;font-weight:900;font-stretch:normal;}.tk-proxima-soft{font-family:"proxima-soft",sans-serif;}</style>
+
+<style>
+  @font-face {
+    font-family: icomoon;
+    src: url(icomoon.debd6ede6b334efa4bb2.eot);
+    src: url(icomoon.debd6ede6b334efa4bb2.eot?#iefix) format("embedded-opentype"),url(icomoon.e2f7902569c00f64b667.ttf) format("truetype"),url(icomoon.728d3e49a2a772fb76d0.woff) format("woff"),url(icomoon.18631820e29bdf121189.svg#icomoon) format("svg");
+    font-weight: 400;
+    font-style: normal;
+    font-display: block
+}
+
+[data-icon]:before {
+    font-family: icomoon;
+    content: attr(data-icon);
+    font-feature-settings: normal;
+    font-variant: normal;
+    -webkit-font-smoothing: antialiased
+}
+
+[class*=" icon-"],[class^=icon-],[data-icon]:before {
+    speak: none;
+    font-weight: 400;
+    text-transform: none;
+    line-height: 1
+}
+
+[class*=" icon-"],[class^=icon-] {
+    font-family: icomoon!important;
+    font-style: normal;
+    font-feature-settings: normal;
+    font-variant: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale
+}
+
+.icon-ogi-address-book:before {
+    content: "\e900"
+}
+
+.icon-ogi-arrow-box:before {
+    content: "\e901"
+}
+
+.icon-ogi-arrow-down:before {
+    content: "\e903"
+}
+
+.icon-ogi-arrow-file:before {
+    content: "\e904"
+}
+
+.icon-ogi-ban:before {
+    content: "\e906"
+}
+
+.icon-ogi-bell:before {
+    content: "\e907"
+}
+
+.icon-ogi-box:before {
+    content: "\e909"
+}
+
+.icon-ogi-calculator:before {
+    content: "\e90a"
+}
+
+.icon-ogi-calendar:before {
+    content: "\e90b"
+}
+
+.icon-ogi-car:before {
+    content: "\e90c"
+}
+
+.icon-ogi-caret-down:before {
+    content: "\e90d"
+}
+
+.icon-ogi-caret-left:before {
+    content: "\e90e"
+}
+
+.icon-ogi-caret-right:before {
+    content: "\e90f"
+}
+
+.icon-ogi-caret-up:before {
+    content: "\e910"
+}
+
+.icon-ogi-chart-bar:before {
+    content: "\e911"
+}
+
+.icon-ogi-chart-network:before {
+    content: "\e913"
+}
+
+.icon-ogi-chart-pie:before {
+    content: "\e914"
+}
+
+.icon-ogi-check:before {
+    content: "\e915"
+}
+
+.icon-ogi-check-box:before {
+    content: "\e916"
+}
+
+.icon-ogi-check-circle:before {
+    content: "\e917"
+}
+
+.icon-ogi-chevron-down:before {
+    content: "\e918"
+}
+
+.icon-ogi-chevron-left:before {
+    content: "\e919"
+}
+
+.icon-ogi-chevron-right:before {
+    content: "\e91a"
+}
+
+.icon-ogi-chevron-up:before {
+    content: "\e91b"
+}
+
+.icon-ogi-clock:before {
+    content: "\e91c"
+}
+
+.icon-ogi-cloud-download:before {
+    content: "\e91d"
+}
+
+.icon-ogi-cloud-upload:before {
+    content: "\e91e"
+}
+
+.icon-ogi-cog:before {
+    content: "\e91f"
+}
+
+.icon-ogi-copy:before {
+    content: "\e920"
+}
+
+.icon-ogi-desktop:before {
+    content: "\e921";
+    font-family: icomoon
+}
+
+.icon-ogi-diagram:before {
+    content: "\e922"
+}
+
+.icon-ogi-dictionary:before {
+    content: "\e923"
+}
+
+.icon-ogi-disc:before {
+    content: "\e924"
+}
+
+.icon-ogi-ellipsis:before {
+    content: "\e925"
+}
+
+.icon-ogi-exclamation-bell:before {
+    content: "\e926"
+}
+
+.icon-ogi-exclamation-circle:before {
+    content: "\e927"
+}
+
+.icon-ogi-exclamation-comment:before {
+    content: "\e928"
+}
+
+.icon-ogi-exclamation-hexagon:before {
+    content: "\e929"
+}
+
+.icon-ogi-exclamation-triangle:before {
+    content: "\e92a"
+}
+
+.icon-ogi-eye:before {
+    content: "\e92b"
+}
+
+.icon-ogi-file:before {
+    content: "\e92c"
+}
+
+.icon-ogi-flask:before {
+    content: "\e92d"
+}
+
+.icon-ogi-forward:before {
+    content: "\e92e"
+}
+
+.icon-ogi-history:before {
+    content: "\e92f"
+}
+
+.icon-ogi-info-circle:before {
+    content: "\e930"
+}
+
+.icon-ogi-keyboard:before {
+    content: "\e931"
+}
+
+.icon-ogi-money-bill:before {
+    content: "\e935"
+}
+
+.icon-ogi-newspaper:before {
+    content: "\e936"
+}
+
+.icon-ogi-paperclip:before {
+    content: "\e937"
+}
+
+.icon-ogi-pdf-file:before {
+    content: "\e938"
+}
+
+.icon-ogi-pencil:before {
+    content: "\e939"
+}
+
+.icon-ogi-plus:before {
+    content: "\e93a"
+}
+
+.icon-ogi-plus-square:before {
+    content: "\e93b"
+}
+
+.icon-ogi-pound-file:before {
+    content: "\e93c"
+}
+
+.icon-ogi-question-circle:before {
+    content: "\e93d"
+}
+
+.icon-ogi-reply:before {
+    content: "\e93e"
+}
+
+.icon-ogi-reply-all:before {
+    content: "\e93f"
+}
+
+.icon-ogi-save:before {
+    content: "\e940"
+}
+
+.icon-ogi-search:before {
+    content: "\e941"
+}
+
+.icon-ogi-search-file:before {
+    content: "\e942"
+}
+
+.icon-ogi-shield:before {
+    content: "\e943"
+}
+
+.icon-ogi-sitemap:before {
+    content: "\e944"
+}
+
+.icon-ogi-table:before {
+    content: "\e945"
+}
+
+.icon-ogi-tag:before {
+    content: "\e946"
+}
+
+.icon-ogi-times:before {
+    content: "\e948"
+}
+
+.icon-ogi-times-box:before {
+    content: "\e949"
+}
+
+.icon-ogi-times-circle:before {
+    content: "\e94a"
+}
+
+.icon-ogi-times-file:before {
+    content: "\e94b"
+}
+
+.icon-ogi-times-shield:before {
+    content: "\e94c"
+}
+
+.icon-ogi-trash:before {
+    content: "\e94d"
+}
+
+.icon-ogi-trash-box:before {
+    content: "\e94e"
+}
+
+.icon-ogi-user:before {
+    content: "\e94f"
+}
+
+.icon-ogi-user-circle:before {
+    content: "\e950"
+}
+
+.icon-ogi-user-plus:before {
+    content: "\e952"
+}
+
+.icon-ogi-users:before {
+    content: "\e954"
+}
+
+.icon-ogi-users-circle:before {
+    content: "\e955"
+}
+
+.icon-ogi-wrench:before {
+    content: "\e957"
+}
+
+.icon-ogi-pound:before {
+    content: "\e959"
+}
+
+.icon-ogi-queue:before {
+    content: "\e958"
+}
+
+.icon-ogi-bolt:before {
+    content: "\e908"
+}
+
+.icon-ogi-line:before {
+    content: "\e932"
+}
+
+.icon-ogi-chart-line:before {
+    content: "\e912"
+}
+
+.icon-ogi-arrow-dashed:before {
+    content: "\e902"
+}
+
+.icon-ogi-user-connection:before {
+    content: "\e951"
+}
+
+.icon-ogi-target:before {
+    content: "\e947"
+}
+
+.icon-ogi-id:before {
+    content: "\e960"
+}
+
+.icon-ogi-mongo:before {
+    content: "\e961"
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const triggers = document.querySelectorAll('a[data-toggle="collapse"][href^="#"]');
+
+  function expand(panel, trigger) {
+    panel.classList.add('show');
+    trigger.classList.remove('collapsed');
+    trigger.setAttribute('aria-expanded', 'true');
+
+    panel.style.height = '0px';
+
+    requestAnimationFrame(() => {
+      panel.style.height = panel.scrollHeight + 'px';
+    });
+
+    const onEnd = (e) => {
+      if (e.propertyName !== 'height') return;
+      if (panel.classList.contains('show')) {
+        panel.style.height = 'auto';
+      }
+      panel.removeEventListener('transitionend', onEnd);
+    };
+
+    panel.addEventListener('transitionend', onEnd);
+  }
+
+  function collapse(panel, trigger) {
+    trigger.classList.add('collapsed');
+    trigger.setAttribute('aria-expanded', 'false');
+
+    // If currently auto, lock it to pixel height first
+    panel.style.height = panel.scrollHeight + 'px';
+
+    requestAnimationFrame(() => {
+      panel.style.height = '0px';
+    });
+
+    const onEnd = (e) => {
+      if (e.propertyName !== 'height') return;
+      panel.classList.remove('show');
+      panel.removeEventListener('transitionend', onEnd);
+    };
+
+    panel.addEventListener('transitionend', onEnd);
+  }
+
+  triggers.forEach(trigger => {
+    const target = document.querySelector(trigger.getAttribute('href'));
+    if (!target) return;
+
+    const isOpen = target.classList.contains('show');
+    trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    trigger.classList.toggle('collapsed', !isOpen);
+    target.style.height = isOpen ? 'auto' : '0px';
+
+    trigger.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      if (target.classList.contains('show')) {
+        collapse(target, trigger);
+      } else {
+        expand(target, trigger);
+      }
+    });
+  });
+});
+</script>
+
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="brand-row">
+          <span><img src="ogi_ratings_logo.png" alt="ogi ratings"/></span>
+          <span class="brand-badge">diagnostics</span>
+        </div>
+      </div>
+      <div style="display:none">
+        <div class="nav-section-title">Org Insights</div>
+        <a class="nav-a active" data-page="organisations">Organisations</a>
+        <a class="nav-a" data-page="features">Features</a>
+        <a class="nav-a" data-page="services">Distributions &amp; Services</a>
+        <div class="nav-section-title" style="display:none;">Prototype</div>
+        <a class="nav-a" id="regenData" style="display:none;">Regenerate sample data</a>
+      </div>
+      <ul class="nav">
+   <li class="nav-item">
+      <a routerlink="/dashboard" class="nav-link" href="#!">
+         <i class="icon-ogi-desktop"></i><span>Insurer Dashboard</span>
+      </a>
+   </li>
+
+   <li class="nav-item">
+      <a routerlink="/servicehealth" class="nav-link" href="#!">
+         <i class="icon-ogi-chart-line"></i><span>Service Health</span>
+      </a>
+   </li>
+
+   <li class="nav-item">
+      <a routerlink="/cb" class="nav-link" href="#!">
+         <i class="icon-ogi-bolt"></i><span>Circuit Breakers</span>
+      </a>
+   </li>
+
+   <li class="nav-item">
+      <a routerlink="/clustermonitor" class="nav-link" href="#!">
+         <i class="icon-ogi-line"></i><span>Cluster Resource Monitor</span>
+      </a>
+   </li>
+
+   <li class="nav-item">
+      <a data-toggle="collapse" href="#whitelist-expand" id="whitelist" class="nav-link collapsed">
+         <i class="icon-ogi-sitemap"></i><span>Whitelist</span>
+         <i class="icon-ogi-chevron-down" style="float:right;margin-top:4px;"></i>
+      </a>
+      <div id="whitelist-expand" class="collapse">
+         <ul class="navbar-nav subnav">
+            <li class="nav-item"><a href="#!">Ratings</a></li>
+            <li class="nav-item"><a href="#!">CQES</a></li>
+         </ul>
+      </div>
+   </li>
+
+
+   <li class="nav-item">
+      <a data-toggle="collapse" href="#orginsights-expand" id="orginsights" class="nav-link" aria-expanded="true">
+         <i class="icon-ogi-info-circle"></i><span>Org Insights</span>
+         <i class="icon-ogi-chevron-down" style="float:right;margin-top:4px;"></i>
+      </a>
+      <div id="orginsights-expand" class="collapse show" style="height: auto;">
+         <ul class="navbar-nav subnav">
+            <li class="nav-item active" data-page="organisations"><a href="#!">Organisations</a></li>
+            <li class="nav-item" data-page="features"><a href="#!">Features</a></li>
+            <li class="nav-item" data-page="services"><a href="#!">Distribution</a></li>
+         </ul>
+      </div>
+   </li>
+
+   <li class="nav-item">
+      <a data-toggle="collapse" href="#entitymanagement-expand" id="entitymanagement" class="nav-link">
+         <i class="icon-ogi-chart-network"></i><span>Entity Management</span>
+         <i class="icon-ogi-chevron-down" style="float:right;margin-top:4px;"></i>
+      </a>
+
+      <div id="entitymanagement-expand" class="collapse">
+         <ul class="navbar-nav subnav">
+
+            <li class="nav-item">
+               <a href="#!">
+                  <i class="icon-ogi-box"></i><span style="padding-left:5px;">Products</span>
+               </a>
+            </li>
+
+            <li class="nav-item">
+               <a data-toggle="collapse" href="#organization-expand" id="organization">
+                  <i class="icon-ogi-user-connection"></i>
+                  <span style="padding-left:5px;">Organisations</span>
+                  <i class="icon-ogi-chevron-down" style="float:right;"></i>
+               </a>
+
+               <div id="organization-expand" class="collapse" style="padding-left:20px;">
+                  <ul class="navbar-nav subnav">
+                     <li class="nav-item"><a href="#!">Ratings</a></li>
+                     <li class="nav-item"><a href="#!">CQES</a></li>
+                     <li class="nav-item"><a href="#!">Insurer Gateway</a></li>
+                  </ul>
+               </div>
+            </li>
+
+            <li class="nav-item">
+               <a href="#!">
+                  <i class="icon-ogi-check-box"></i><span style="padding-left:5px;">Enrichments</span>
+               </a>
+            </li>
+
+         </ul>
+      </div>
+   </li>
+
+   <li class="nav-item">
+      <a data-toggle="collapse" href="#migration-expand" class="nav-link">
+         <i class="icon-ogi-arrow-dashed"></i><span>Migration</span>
+         <i class="icon-ogi-chevron-down" style="float:right;"></i>
+      </a>
+
+      <div id="migration-expand" class="collapse">
+         <ul class="navbar-nav subnav">
+            <li class="nav-item"><a href="#!">Migration Tool</a></li>
+            <li class="nav-item"><a href="#!">Migration Log</a></li>
+         </ul>
+      </div>
+   </li>
+
+   <li class="nav-item"><a href="#!" class="nav-link"><i class="icon-ogi-search"></i><span>Name Finder</span></a></li>
+   <li class="nav-item"><a href="#!" class="nav-link"><i class="icon-ogi-id"></i><span>ID Finder</span></a></li>
+   <li class="nav-item"><a href="#!" class="nav-link"><i class="icon-ogi-target"></i><span>Request Tracker</span></a></li>
+
+   <li class="nav-item">
+      <a data-toggle="collapse" href="#Polaris-expand" id="Polaris" class="nav-link">
+         <i class="icon-ogi-file"></i><span>Polaris</span>
+         <i class="icon-ogi-chevron-down" style="float:right;"></i>
+      </a>
+
+      <div id="Polaris-expand" class="collapse">
+         <ul class="navbar-nav subnav">
+            <li class="nav-item"><a href="#!">Dictionaries</a></li>
+            <li class="nav-item"><a href="#!">XRTE</a></li>
+         </ul>
+      </div>
+   </li>
+
+   <li class="nav-item">
+      <a href="#!" class="nav-link">
+         <i class="icon-ogi-pound"></i><span>Resource Cost</span>
+      </a>
+   </li>
+
+   <li class="nav-item">
+      <a data-toggle="collapse" href="#reportList-expand" id="report" class="nav-link">
+         <i class="icon-ogi-chart-pie"></i><span>Service Reports</span>
+         <i class="icon-ogi-chevron-down" style="float:right;"></i>
+      </a>
+
+      <div id="reportList-expand" class="collapse">
+         <ul class="navbar-nav subnav">
+            <li class="nav-item"><a href="#!">Service Errors</a></li>
+            <li class="nav-item"><a href="#!">Scheme Errors</a></li>
+            <li class="nav-item"><a href="#!">Proxy Errors</a></li>
+            <li class="nav-item"><a href="#!">Portal Logs</a></li>
+            <li class="nav-item"><a href="#!">Invalid Requests</a></li>
+            <li class="nav-item"><a href="#!">Audit Logs</a></li>
+            <li class="nav-item"><a href="#!">User Activity Logs</a></li>
+            <li class="nav-item"><a href="#!">Configuration Log</a></li>
+            <li class="nav-item"><a href="#!">Organization Stats</a></li>
+         </ul>
+      </div>
+   </li>
+
+   <li class="nav-item">
+      <a href="#!" class="nav-link">
+         <i class="icon-ogi-newspaper"></i><span>Release Notes</span>
+      </a>
+   </li>
+</ul>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div style="display: none">Ratings Organisation Insights Prototype</div>
+        <div class="right" style="display: none">Admin view · Working HTML / CSS / JS prototype</div>
+      </div>
+
+      <section id="page-organisations" class="page active">
+        <div class="page-header">
+          <div>
+            <h1>Organisations</h1>
+            <div class="subtitle">Find an organisation and understand identity, entitlements, configuration, and usage.</div>
+          </div>
+          <div class="actions">
+            <button class="secondary">Download current view</button>
+            <button class="secondary" id="clearOrgFilters">Clear filters</button>
+          </div>
+        </div>
+
+        <div class="summary-grid" id="orgSummary"></div>
+
+        <div class="panel">
+          <div class="filters-grid">
+            <div class="field">
+              <label>Search organisation</label>
+              <input id="orgSearch" type="text" placeholder="Search by name, Org ID, or SCID" />
+            </div>
+            <div class="field">
+              <label>Licence Type</label>
+              <select id="orgLicenceFilter"></select>
+            </div>
+            <div class="field">
+              <label>Org Type</label>
+              <select id="orgTypeFilter"></select>
+            </div>
+            <div class="field">
+              <label>Status</label>
+              <select id="orgStatusFilter"></select>
+            </div>
+            <div class="field">
+              <label>SSO</label>
+              <select id="orgSSOFilter"></select>
+            </div>
+            <div class="field">
+              <label>Core Broker</label>
+              <select id="orgCoreFilter"></select>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <div class="chips" id="orgPresetChips"></div>
+          </div>
+        </div>
+
+        <div class="layout-2">
+          <div class="panel">
+            <div class="split-head">
+              <h3>Organisation results</h3>
+              <div class="footer-note" id="orgCount"></div>
+            </div>
+            <div class="table-wrap">
+              <table id="orgTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel" id="orgDetailPanel">
+            <div class="empty">Select an organisation to view detail.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-features" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Features</h1>
+            <div class="subtitle">Select a feature, enrichment, or add-on to see which organisations are entitled, configured, active, or using it.</div>
+          </div>
+          <div class="actions">
+            <button class="secondary">Download feature report</button>
+            <button class="secondary" id="clearFeatureFilters">Clear filters</button>
+          </div>
+        </div>
+
+        <div class="feature-layout">
+          <div class="panel list-panel">
+            <div class="field">
+              <label>Search feature / enrichment / add-on</label>
+              <input id="featureSearch" type="text" placeholder="Type to filter items" />
+            </div>
+            <div style="margin-top:12px">
+              <div class="chips" id="featureCategoryChips"></div>
+            </div>
+            <div class="item-list" id="featureList" style="margin-top:14px"></div>
+          </div>
+
+          <div style="display:grid; gap:16px; align-content:start;">
+            <div class="panel" id="featureHeaderPanel">
+              <div class="empty">Select a feature to view organisations with access.</div>
+            </div>
+
+            <div class="panel">
+              <div class="filters-grid" style="grid-template-columns:repeat(5,minmax(120px,1fr));">
+                <div class="field">
+                  <label>Licence Type</label>
+                  <select id="featureLicenceFilter"></select>
+                </div>
+                <div class="field">
+                  <label>Org Type</label>
+                  <select id="featureOrgTypeFilter"></select>
+                </div>
+                <div class="field">
+                  <label>Status</label>
+                  <select id="featureStatusFilter"></select>
+                </div>
+                <div class="field">
+                  <label>Access State</label>
+                  <select id="featureAccessFilter"></select>
+                </div>
+                <div class="field">
+                  <label>Traffic</label>
+                  <select id="featureTrafficFilter"></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="split-head">
+                <h3>Organisations with access</h3>
+                <div class="footer-note" id="featureOrgCount"></div>
+              </div>
+              <div class="table-wrap">
+                <table id="featureOrgTable">
+                  <thead></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-services" class="page">
+        <div class="page-header">
+          <div>
+            <h1>Distributions &amp; Services</h1>
+            <div class="subtitle">View caller, distributor, quote engine, and service relationships by organisation or by relationship type.</div>
+          </div>
+          <div class="actions">
+            <button class="secondary">Download relationship report</button>
+            <button class="secondary" id="clearServiceFilters">Clear filters</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="two-col">
+            <div>
+              <div class="field">
+                <label>Organisation</label>
+                <input id="serviceOrgSearch" type="text" placeholder="Search organisation by name, Org ID, or SCID" />
+              </div>
+            </div>
+            <div>
+              <div class="field">
+                <label>Relationship Type</label>
+                <select id="relationshipTypeFilter"></select>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <div class="chips" id="relationshipModeChips"></div>
+          </div>
+        </div>
+
+        <div class="layout-2">
+          <div class="panel">
+            <div class="split-head">
+              <h3 id="servicePrimaryTitle">Organisation results</h3>
+              <div class="footer-note" id="servicePrimaryCount"></div>
+            </div>
+            <div class="table-wrap">
+              <table id="servicePrimaryTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel" id="serviceSecondaryPanel">
+            <div class="empty">Select an organisation or relationship to inspect connected services.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      data: null,
+      page: 'organisations',
+      orgFilters: { search: '', licence: 'All', orgType: 'All', status: 'All', sso: 'All', core: 'All', preset: 'All' },
+      orgSort: { key: 'name', dir: 'asc' },
+      selectedOrgId: null,
+      featureFilters: { search: '', category: 'all', licence: 'All', orgType: 'All', status: 'All', access: 'all', traffic: 'all' },
+      featureSort: { key: 'name', dir: 'asc' },
+      selectedFeatureKey: null,
+      serviceMode: 'org',
+      serviceFilters: { orgSearch: '', relationshipType: 'All' },
+      serviceSort: { key: 'name', dir: 'asc' },
+      selectedServiceEntity: null,
+    };
+
+    const TAXONOMY = {
+      licenceTypes: ['Ratings', 'IHP Plus', 'IHP Proxy', 'RTE'],
+      orgTypes: ['Broker', 'MGA', 'Insurer', 'Internal OGI'],
+      statuses: ['Active', 'Inactive', 'Suspended'],
+      trafficBands: ['None', 'Low', 'Medium', 'High'],
+      features: [
+        ['batch-test', 'Batch Test', 'Test rating changes in bulk before release.'],
+        ['quote-manipulation', 'Quote Manipulation', 'Detect and respond to suspicious quoting behaviour.'],
+        ['scheme-module', 'Scheme Module', 'Reusable, pre-built scheme components shared across products.'],
+        ['approval-guard', 'Approval Guard', 'Prevent editors from publishing their own code changes.'],
+        ['single-sign-on', 'Single Sign On', 'Enterprise SSO access for organisation users.'],
+        ['service-health', 'Service Health', 'View service availability and incident signals.']
+      ],
+      enrichments: [
+        ['lexis-nexis', 'Lexis Nexis', 'External data enrichment for risk and identity.'],
+        ['percayso', 'Percayso', 'Consumer insight and affordability enrichment.'],
+        ['floodre', 'FloodRe', 'Flood risk support and related property enrichment.'],
+        ['mlp-claim', 'MLP Propensity to Claim', 'Pricing support using claim propensity signals.'],
+        ['mlp-pricing', 'MLP Optimal Pricing', 'Pricing optimisation enrichment.'],
+        ['mylicence', 'MyLicence', 'Driving licence and vehicle-based enrichment.']
+      ],
+      addons: [
+        ['private-cluster', 'Private Cluster', 'Dedicated hosting footprint for selected customers.'],
+        ['data-lake', 'Data Lake', 'Central export and analysis storage option.'],
+        ['data-enrichment-service', 'Data Enrichment Service', 'Managed enrichment orchestration service.']
+      ],
+      quoteEngines: ['CDL', 'SSP', 'Radar', 'Polaris', 'KitsuneEngine', 'ZurichEngine'],
+      callers: ['Core', 'V', 'Mobius', 'Acturis', 'Applied', 'BGL', 'CDL', 'SSP'],
+      distributors: ['CEQ', 'Europa', 'Broker Direct', 'Markerstudy', 'Aviva', 'AXA UK', 'ERS', 'Bluegreen'],
+      services: ['Policy API', 'Quote API', 'Rating Service', 'Pricing Gateway', 'Document Service', 'Health Endpoint']
+    };
+
+    const NAME_PREFIXES = ['Acorn', 'Adrian Flux', 'Allianz', 'Assurant', 'AXA', 'CEQ', 'ERS', 'Europa', 'Freeway', 'Grove & Dean', 'Got You Covered', 'Integra', 'KGM', 'Markerstudy', 'NFUM', 'Pen', 'Premium Choice', 'Pukka', 'Sabre', 'TIC Training', 'Bluegreen', 'Complete Cover', 'Broker Direct', 'Paragon', 'Aviva', 'Hastings', 'Intact', 'Go Skippy', 'Zenith', 'OpenCover'];
+    const NAME_SUFFIXES = ['Insurance', 'MGA', 'Underwriting', 'Broker', 'General', 'Services', 'Solutions', 'Risk', 'Mutual', 'Cover'];
+    const LOBS = ['Motor', 'Home', 'Van', 'Bike', 'Commercial', 'Travel'];
+
+    function rand(seed) {
+      let x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function pick(arr, seed) { return arr[Math.floor(rand(seed) * arr.length)]; }
+
+    function sample(arr, min, max, seed) {
+      const n = min + Math.floor(rand(seed + 1) * (max - min + 1));
+      const copy = [...arr];
+      const out = [];
+      let s = seed + 2;
+      while (out.length < Math.min(n, copy.length)) {
+        const idx = Math.floor(rand(s++) * copy.length);
+        out.push(copy.splice(idx, 1)[0]);
+      }
+      return out;
+    }
+
+    function bool(p, seed) { return rand(seed) < p; }
+
+    function makeAccess(key, name, seed) {
+      const entitled = bool(0.78, seed + 1);
+      const configured = entitled && bool(0.78, seed + 2);
+      const active = configured && bool(0.72, seed + 3);
+      const hasTraffic = active && bool(0.66, seed + 4);
+      const traffic30d = hasTraffic ? Math.floor(rand(seed + 5) * 22000) + 1 : 0;
+      return {
+        key, name,
+        entitled,
+        configured,
+        active,
+        hasTraffic,
+        traffic30d,
+        trafficBand: trafficBandFromCount(traffic30d),
+        lastUsedAt: hasTraffic ? randomDate(seed + 6, 40) : (active ? randomDate(seed + 7, 180) : null),
+        notes: ''
+      };
+    }
+
+    function randomDate(seed, maxDaysBack = 90) {
+      const now = new Date('2026-01-15T12:00:00Z').getTime();
+      const offset = Math.floor(rand(seed) * maxDaysBack * 24 * 3600 * 1000);
+      return new Date(now - offset).toISOString();
+    }
+
+    function trafficBandFromCount(n) {
+      if (!n) return 'None';
+      if (n < 100) return 'Low';
+      if (n < 10000) return 'Medium';
+      return 'High';
+    }
+
+    function generateData() {
+      const catalog = {
+        products: TAXONOMY.licenceTypes.map((v, i) => ({ key: slug(v), name: v, category: 'product', description: v + ' commercial product.' })),
+        features: TAXONOMY.features.map(([key, name, description]) => ({ key, name, category: 'feature', description })),
+        enrichments: TAXONOMY.enrichments.map(([key, name, description]) => ({ key, name, category: 'enrichment', description })),
+        addons: TAXONOMY.addons.map(([key, name, description]) => ({ key, name, category: 'addon', description })),
+        quoteEngines: TAXONOMY.quoteEngines.map(name => ({ key: slug(name), name, category: 'quote-engine', description: name + ' quote engine integration.' })),
+        callers: TAXONOMY.callers.map(name => ({ key: slug(name), name, category: 'caller', description: name + ' caller relationship.' })),
+        distributors: TAXONOMY.distributors.map(name => ({ key: slug(name), name, category: 'distributor', description: name + ' distributor relationship.' })),
+        services: TAXONOMY.services.map(name => ({ key: slug(name), name, category: 'service', description: name + ' service connection.' })),
+      };
+
+      const orgs = [];
+      for (let i = 1; i <= 60; i++) {
+        const p = pick(NAME_PREFIXES, i * 3.17);
+        const s = pick(NAME_SUFFIXES, i * 5.31);
+        const name = `${p} ${s}`;
+        const orgType = i <= 20 ? 'Broker' : i <= 38 ? 'MGA' : i <= 54 ? 'Insurer' : 'Internal OGI';
+        const licences = sample(TAXONOMY.licenceTypes, 1, bool(0.2, i * 1.1) ? 2 : 1, i * 7.2);
+        const status = i % 13 === 0 ? 'Suspended' : (i % 6 === 0 ? 'Inactive' : 'Active');
+        const ssoPreferred = bool(0.43, i * 2.2);
+        const coreBroker = orgType === 'Broker' ? bool(0.45, i * 3.2) : bool(0.14, i * 4.1);
+
+        const features = catalog.features.map((item, idx) => makeAccess(item.key, item.name, i * 100 + idx));
+        const enrichments = catalog.enrichments.map((item, idx) => makeAccess(item.key, item.name, i * 140 + idx));
+        const addons = catalog.addons.map((item, idx) => makeAccess(item.key, item.name, i * 180 + idx));
+        const quoteEngines = catalog.quoteEngines.map((item, idx) => {
+          const rel = makeAccess(item.key, item.name, i * 220 + idx);
+          return { ...rel, connected: rel.entitled || rel.configured || rel.active };
+        }).filter(x => x.connected || bool(0.2, i * 230 + x?.name?.length || 0));
+
+        const products = TAXONOMY.licenceTypes.map((name, idx) => ({
+          key: slug(name), name,
+          entitled: licences.includes(name),
+          configured: licences.includes(name) && bool(0.8, i * 250 + idx),
+          active: licences.includes(name) && status === 'Active' && bool(0.72, i * 260 + idx),
+          hasTraffic: licences.includes(name) && status === 'Active' && bool(0.64, i * 270 + idx),
+        })).filter(x => x.entitled);
+
+        const callers = sample(catalog.callers, 2, 5, i * 10).map((item, idx) => ({ ...makeAccess(item.key, item.name, i * 300 + idx), direction: 'consumed', connected: true }));
+        const distributors = sample(catalog.distributors, 2, 5, i * 11).map((item, idx) => ({ ...makeAccess(item.key, item.name, i * 340 + idx), direction: 'provided', connected: true }));
+        const servicesConsumed = sample(catalog.services, 2, 4, i * 12).map((item, idx) => ({ ...makeAccess(item.key, item.name, i * 380 + idx), direction: 'consumed', connected: true }));
+        const servicesProvided = sample(catalog.services, 1, 3, i * 13).map((item, idx) => ({ ...makeAccess(item.key, item.name, i * 420 + idx), direction: 'provided', connected: true }));
+
+        const orgTraffic = [...features, ...enrichments, ...addons, ...callers, ...distributors, ...servicesConsumed, ...servicesProvided].reduce((a, b) => a + (b.traffic30d || 0), 0);
+
+        orgs.push({
+          id: 'org_' + String(i).padStart(3, '0'),
+          orgId: randomHex(i * 99, 24),
+          name,
+          description: describeOrg(name, orgType, licences, i),
+          scid: 'A' + String(3000 + i * 17).padStart(5, '0'),
+          licenceTypes: licences,
+          orgType,
+          status,
+          ssoPreferred,
+          coreBroker,
+          fcaRef: 'FRN' + (100000 + i * 37),
+          lobs: sample(LOBS, 1, 3, i * 14),
+          lastSeenAt: status === 'Active' ? randomDate(i * 15, 30) : randomDate(i * 16, 240),
+          trafficBand: trafficBandFromCount(orgTraffic),
+          traffic30d: orgTraffic,
+          products,
+          features,
+          enrichments,
+          addons,
+          quoteEngines,
+          relationships: { callers, distributors, servicesConsumed, servicesProvided }
+        });
+      }
+
+      return {
+        meta: { generatedAt: new Date().toISOString(), version: '1.0' },
+        taxonomies: {
+          licenceTypes: TAXONOMY.licenceTypes,
+          orgTypes: TAXONOMY.orgTypes,
+          statuses: TAXONOMY.statuses,
+          trafficBands: TAXONOMY.trafficBands,
+        },
+        catalog,
+        orgs
+      };
+    }
+
+    function randomHex(seed, len) {
+      const chars = 'abcdef0123456789';
+      let s = '';
+      for (let i = 0; i < len; i++) s += chars[Math.floor(rand(seed + i * 1.11) * chars.length)];
+      return s;
+    }
+
+    function describeOrg(name, orgType, licences, seed) {
+      const base = {
+        'Broker': 'Broker using Ratings to distribute products across internal and external platforms.',
+        'MGA': 'MGA operating delegated authority products with cloud-hosted rating capability.',
+        'Insurer': 'Insurer using hosted pricing and distribution integrations across selected channels.',
+        'Internal OGI': 'Internal Open GI organisation used for support, testing, or operational routing.'
+      }[orgType];
+      const lobText = sample(LOBS, 1, 2, seed * 4).join(' and ');
+      return `${name} is an ${orgType.toLowerCase()} focused on ${lobText.toLowerCase()} lines. ${base} Licences include ${licences.join(' + ')}.`;
+    }
+
+    function slug(value) { return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
+    function fmtBool(v) { return v ? 'Yes' : 'No'; }
+    function fmtDate(v) { return v ? new Date(v).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '—'; }
+    function fmtNumber(n) { return n.toLocaleString('en-GB'); }
+    function statusBadge(value) {
+      const cls = 'badge-' + slug(String(value));
+      return `<span class="badge ${cls}">${value}</span>`;
+    }
+
+    function populateSelect(id, options, includeAll = true) {
+      const el = document.getElementById(id);
+      el.innerHTML = '';
+      if (includeAll) el.append(new Option('All', 'All'));
+      options.forEach(opt => el.append(new Option(opt, opt)));
+    }
+
+    function setUpFilters() {
+      populateSelect('orgLicenceFilter', state.data.taxonomies.licenceTypes);
+      populateSelect('orgTypeFilter', state.data.taxonomies.orgTypes);
+      populateSelect('orgStatusFilter', state.data.taxonomies.statuses);
+      populateSelect('orgSSOFilter', ['All', 'Yes', 'No'], false);
+      populateSelect('orgCoreFilter', ['All', 'Yes', 'No'], false);
+      populateSelect('featureLicenceFilter', state.data.taxonomies.licenceTypes);
+      populateSelect('featureOrgTypeFilter', state.data.taxonomies.orgTypes);
+      populateSelect('featureStatusFilter', state.data.taxonomies.statuses);
+      populateSelect('featureAccessFilter', ['all', 'entitled', 'configured', 'active'], false);
+      populateSelect('featureTrafficFilter', ['all', 'has-traffic', 'no-traffic'], false);
+      populateSelect('relationshipTypeFilter', ['All', 'Caller', 'Distributor', 'Service Consumed', 'Service Provided', 'Quote Engine'], false);
+
+      bindInput('orgSearch', val => { state.orgFilters.search = val.trim().toLowerCase(); renderOrganisations(); });
+      bindSelect('orgLicenceFilter', val => { state.orgFilters.licence = val; renderOrganisations(); });
+      bindSelect('orgTypeFilter', val => { state.orgFilters.orgType = val; renderOrganisations(); });
+      bindSelect('orgStatusFilter', val => { state.orgFilters.status = val; renderOrganisations(); });
+      bindSelect('orgSSOFilter', val => { state.orgFilters.sso = val; renderOrganisations(); });
+      bindSelect('orgCoreFilter', val => { state.orgFilters.core = val; renderOrganisations(); });
+
+      bindInput('featureSearch', val => { state.featureFilters.search = val.trim().toLowerCase(); renderFeatures(); });
+      bindSelect('featureLicenceFilter', val => { state.featureFilters.licence = val; renderFeatures(); });
+      bindSelect('featureOrgTypeFilter', val => { state.featureFilters.orgType = val; renderFeatures(); });
+      bindSelect('featureStatusFilter', val => { state.featureFilters.status = val; renderFeatures(); });
+      bindSelect('featureAccessFilter', val => { state.featureFilters.access = val; renderFeatures(); });
+      bindSelect('featureTrafficFilter', val => { state.featureFilters.traffic = val; renderFeatures(); });
+
+      bindInput('serviceOrgSearch', val => { state.serviceFilters.orgSearch = val.trim().toLowerCase(); renderServices(); });
+      bindSelect('relationshipTypeFilter', val => { state.serviceFilters.relationshipType = val; renderServices(); });
+
+      document.getElementById('clearOrgFilters').onclick = () => {
+        state.orgFilters = { search: '', licence: 'All', orgType: 'All', status: 'All', sso: 'All', core: 'All', preset: 'All' };
+        syncFilterUI();
+        renderOrganisations();
+      };
+      document.getElementById('clearFeatureFilters').onclick = () => {
+        state.featureFilters = { search: '', category: 'all', licence: 'All', orgType: 'All', status: 'All', access: 'all', traffic: 'all' };
+        syncFilterUI();
+        renderFeatures();
+      };
+      document.getElementById('clearServiceFilters').onclick = () => {
+        state.serviceFilters = { orgSearch: '', relationshipType: 'All' };
+        state.serviceMode = 'org';
+        state.selectedServiceEntity = null;
+        syncFilterUI();
+        renderServices();
+      };
+
+      document.getElementById('regenData').onclick = () => {
+        state.data = generateData();
+        state.selectedOrgId = state.data.orgs[0]?.id || null;
+        state.selectedFeatureKey = state.data.catalog.features[0]?.key || null;
+        state.selectedServiceEntity = null;
+        setUpFilters();
+        syncFilterUI();
+        renderAll();
+      };
+
+      makeChips('orgPresetChips', [
+        ['All', 'All'], ['Active orgs', 'active'], ['SSO enabled', 'sso'], ['Has traffic', 'traffic'], ['Entitled but inactive', 'entitled-inactive'], ['Core brokers', 'core']
+      ], state.orgFilters.preset, val => { state.orgFilters.preset = val; renderOrganisations(); });
+
+      makeChips('featureCategoryChips', [
+        ['All', 'all'], ['Features', 'feature'], ['Enrichments', 'enrichment'], ['Add-ons', 'addon']
+      ], state.featureFilters.category, val => { state.featureFilters.category = val; renderFeatures(); });
+
+      makeChips('relationshipModeChips', [
+        ['By Organisation', 'org'], ['By Relationship Type', 'relationship']
+      ], state.serviceMode, val => { state.serviceMode = val; state.selectedServiceEntity = null; renderServices(); });
+    }
+
+    function syncFilterUI() {
+      setVal('orgSearch', state.orgFilters.search);
+      setVal('orgLicenceFilter', state.orgFilters.licence);
+      setVal('orgTypeFilter', state.orgFilters.orgType);
+      setVal('orgStatusFilter', state.orgFilters.status);
+      setVal('orgSSOFilter', state.orgFilters.sso);
+      setVal('orgCoreFilter', state.orgFilters.core);
+      setVal('featureSearch', state.featureFilters.search);
+      setVal('featureLicenceFilter', state.featureFilters.licence);
+      setVal('featureOrgTypeFilter', state.featureFilters.orgType);
+      setVal('featureStatusFilter', state.featureFilters.status);
+      setVal('featureAccessFilter', state.featureFilters.access);
+      setVal('featureTrafficFilter', state.featureFilters.traffic);
+      setVal('serviceOrgSearch', state.serviceFilters.orgSearch);
+      setVal('relationshipTypeFilter', state.serviceFilters.relationshipType);
+
+      makeChips('orgPresetChips', [
+        ['All', 'All'], ['Active orgs', 'active'], ['SSO enabled', 'sso'], ['Has traffic', 'traffic'], ['Entitled but inactive', 'entitled-inactive'], ['Core brokers', 'core']
+      ], state.orgFilters.preset, val => { state.orgFilters.preset = val; renderOrganisations(); });
+      makeChips('featureCategoryChips', [
+        ['All', 'all'], ['Features', 'feature'], ['Enrichments', 'enrichment'], ['Add-ons', 'addon']
+      ], state.featureFilters.category, val => { state.featureFilters.category = val; renderFeatures(); });
+      makeChips('relationshipModeChips', [
+        ['By Organisation', 'org'], ['By Relationship Type', 'relationship']
+      ], state.serviceMode, val => { state.serviceMode = val; state.selectedServiceEntity = null; renderServices(); });
+    }
+
+    function bindInput(id, fn) { document.getElementById(id).oninput = e => fn(e.target.value); }
+    function bindSelect(id, fn) { document.getElementById(id).onchange = e => fn(e.target.value); }
+    function setVal(id, v) { const el = document.getElementById(id); if (el) el.value = v; }
+
+    function makeChips(containerId, items, active, onClick) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = items.map(([label, value]) => `<span class="chip ${active===value?'active':''}" data-value="${value}">${label}</span>`).join('');
+      [...el.querySelectorAll('.chip')].forEach(chip => {
+        chip.onclick = () => { 
+          // New: update visual state immediately.
+          // Some chip callbacks update state and re-render the tables,
+          // but they do not re-render these chip containers.
+          el.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          
+          onClick(chip.dataset.value);
+      }
+    });
+    }
+
+    function switchPage(page) {
+      state.page = page;
+      document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+      document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
+    }
+
+    function getFilteredOrgs() {
+      return state.data.orgs.filter(org => {
+        const q = state.orgFilters.search;
+        if (q && !`${org.name} ${org.orgId} ${org.scid}`.toLowerCase().includes(q)) return false;
+        if (state.orgFilters.licence !== 'All' && !org.licenceTypes.includes(state.orgFilters.licence)) return false;
+        if (state.orgFilters.orgType !== 'All' && org.orgType !== state.orgFilters.orgType) return false;
+        if (state.orgFilters.status !== 'All' && org.status !== state.orgFilters.status) return false;
+        if (state.orgFilters.sso !== 'All' && fmtBool(org.ssoPreferred) !== state.orgFilters.sso) return false;
+        if (state.orgFilters.core !== 'All' && fmtBool(org.coreBroker) !== state.orgFilters.core) return false;
+        if (state.orgFilters.preset === 'active' && org.status !== 'Active') return false;
+        if (state.orgFilters.preset === 'sso' && !org.ssoPreferred) return false;
+        if (state.orgFilters.preset === 'traffic' && org.traffic30d === 0) return false;
+        if (state.orgFilters.preset === 'core' && !org.coreBroker) return false;
+        if (state.orgFilters.preset === 'entitled-inactive') {
+          const anyEntitledInactive = [...org.features, ...org.enrichments, ...org.addons].some(x => x.entitled && !x.active);
+          if (!anyEntitledInactive) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderOrganisations() {
+      const filtered = sortRows(getFilteredOrgs(), state.orgSort);
+      if (!state.selectedOrgId || !filtered.some(x => x.id === state.selectedOrgId)) state.selectedOrgId = filtered[0]?.id || null;
+
+      const totalTraffic = filtered.reduce((a,b)=>a+b.traffic30d,0);
+      const active = filtered.filter(x=>x.status==='Active').length;
+      const sso = filtered.filter(x=>x.ssoPreferred).length;
+      const core = filtered.filter(x=>x.coreBroker).length;
+      const multi = filtered.filter(x=>x.licenceTypes.length>1).length;
+      document.getElementById('orgSummary').innerHTML = [
+        ['Visible orgs', filtered.length], ['Active orgs', active], ['SSO enabled', sso], ['Core brokers', core], ['30d traffic', fmtNumber(totalTraffic)]
+      ].map(([l,v])=>`<div class="stat"><div class="stat-label">${l}</div><div class="stat-value">${v}</div></div>`).join('');
+
+      document.getElementById('orgCount').textContent = `${filtered.length} organisations` + (multi ? ` · ${multi} multi-licence` : '');
+      renderTable('orgTable', [
+        ['name', 'Organisation'], ['orgId', 'Org ID'], ['scid', 'SCID'], ['orgType', 'Org Type'], ['licenceTypes', 'Licence'], ['status', 'Status'], ['ssoPreferred', 'SSO'], ['coreBroker', 'Core Broker'], ['lastSeenAt', 'Last Activity'], ['trafficBand', 'Traffic']
+      ], filtered.map(org => ({
+        ...org,
+        licenceTypes: org.licenceTypes.join(', '),
+        status: statusBadge(org.status),
+        ssoPreferred: statusBadge(org.ssoPreferred ? 'Yes' : 'No'),
+        coreBroker: statusBadge(org.coreBroker ? 'Yes' : 'No'),
+        lastSeenAt: fmtDate(org.lastSeenAt),
+        trafficBand: statusBadge(org.trafficBand)
+      })), row => {
+        state.selectedOrgId = row.id;
+        renderOrgDetail();
+        renderOrganisations();
+      }, state.selectedOrgId);
+
+      renderOrgDetail();
+    }
+
+    function renderOrgDetail() {
+      const panel = document.getElementById('orgDetailPanel');
+      const org = state.data.orgs.find(x => x.id === state.selectedOrgId);
+      if (!org) {
+        panel.innerHTML = '<div class="empty">Select an organisation to view detail.</div>';
+        return;
+      }
+      const sections = {
+        products: org.products,
+        features: org.features,
+        enrichments: org.enrichments,
+        addons: org.addons,
+        quoteEngines: org.quoteEngines,
+        callers: org.relationships.callers,
+        distributors: org.relationships.distributors,
+        servicesConsumed: org.relationships.servicesConsumed,
+        servicesProvided: org.relationships.servicesProvided,
+      };
+      const secKeys = [
+        ['products', 'Products'], ['features', 'Features'], ['enrichments', 'Enrichments'], ['addons', 'Add-ons'], ['quoteEngines', 'Quote Engines'], ['callers', 'Callers'], ['distributors', 'Distributors'], ['servicesConsumed', 'Services Consumed'], ['servicesProvided', 'Services Provided']
+      ];
+
+      panel.innerHTML = `
+        <div class="detail-header">
+          <div>
+            <h2>${org.name}</h2>
+            <div class="subtitle">${org.description}</div>
+          </div>
+          <div class="row-badges">
+            ${statusBadge(org.status)}
+            ${org.licenceTypes.map(v=>statusBadge(v)).join('')}
+            ${statusBadge(org.orgType)}
+          </div>
+        </div>
+        <div class="detail-meta">
+          ${[
+            ['Org ID', org.orgId], ['SCID', org.scid], ['Licence Type', org.licenceTypes.join(', ')], ['Org Type', org.orgType], ['Status', org.status], ['SSO Preferred', fmtBool(org.ssoPreferred)], ['Core Broker', fmtBool(org.coreBroker)], ['FCA Ref', org.fcaRef], ['LoBs', org.lobs.join(', ')], ['Last Activity', fmtDate(org.lastSeenAt)], ['30d Traffic', fmtNumber(org.traffic30d)], ['Traffic Band', org.trafficBand]
+          ].map(([k,v])=>`<div class="meta-item"><div class="meta-label">${k}</div><div class="meta-value">${v}</div></div>`).join('')}
+        </div>
+        <div class="section-tabs">
+          ${secKeys.map(([k,label],idx)=>`<div class="section-tab ${idx===0?'active':''}" data-target="${k}">${label} <span class="muted">(${sections[k].length})</span></div>`).join('')}
+        </div>
+        ${secKeys.map(([k,label],idx)=>`
+          <div class="subsection ${idx===0?'active':''}" id="detail-${k}">
+            ${sections[k].length ? `
+              <div class="table-wrap" style="max-height:300px;">
+                <table>
+                  <thead><tr><th>Name</th><th>Entitled</th><th>Configured</th><th>Active</th><th>Traffic</th><th>Last Used</th></tr></thead>
+                  <tbody>
+                    ${sections[k].map(item=>`<tr>
+                      <td>${item.name}</td>
+                      <td>${statusBadge(item.entitled ? 'Yes':'No')}</td>
+                      <td>${statusBadge(item.configured ? 'Yes':'No')}</td>
+                      <td>${statusBadge(item.active ? 'Active':'Inactive')}</td>
+                      <td>${statusBadge(item.trafficBand || 'None')}</td>
+                      <td>${fmtDate(item.lastUsedAt)}</td>
+                    </tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>` : '<div class="empty">No items in this section.</div>'}
+          </div>
+        `).join('')}
+      `;
+      panel.querySelectorAll('.section-tab').forEach(tab => tab.onclick = () => {
+        panel.querySelectorAll('.section-tab').forEach(t=>t.classList.toggle('active', t===tab));
+        panel.querySelectorAll('.subsection').forEach(s=>s.classList.toggle('active', s.id === 'detail-' + tab.dataset.target));
+      });
+    }
+
+    function featureCatalogItems() {
+      const items = [
+        ...state.data.catalog.features,
+        ...state.data.catalog.enrichments,
+        ...state.data.catalog.addons
+      ];
+      return items.filter(item => {
+        const q = state.featureFilters.search;
+        if (state.featureFilters.category !== 'all' && item.category !== state.featureFilters.category) return false;
+        if (q && !`${item.name} ${item.description}`.toLowerCase().includes(q)) return false;
+        return true;
+      });
+    }
+
+    function orgRowsForFeature(item) {
+      const bucketName = item.category === 'feature' ? 'features' : item.category === 'enrichment' ? 'enrichments' : 'addons';
+      return state.data.orgs.map(org => {
+        const rel = org[bucketName].find(x => x.key === item.key);
+        return { org, rel };
+      }).filter(({org, rel}) => {
+        if (!rel) return false;
+        if (state.featureFilters.licence !== 'All' && !org.licenceTypes.includes(state.featureFilters.licence)) return false;
+        if (state.featureFilters.orgType !== 'All' && org.orgType !== state.featureFilters.orgType) return false;
+        if (state.featureFilters.status !== 'All' && org.status !== state.featureFilters.status) return false;
+        if (state.featureFilters.access === 'entitled' && !rel.entitled) return false;
+        if (state.featureFilters.access === 'configured' && !rel.configured) return false;
+        if (state.featureFilters.access === 'active' && !rel.active) return false;
+        if (state.featureFilters.traffic === 'has-traffic' && !rel.hasTraffic) return false;
+        if (state.featureFilters.traffic === 'no-traffic' && rel.hasTraffic) return false;
+        return true;
+      }).map(({org, rel}) => ({
+        id: org.id,
+        name: org.name,
+        orgType: org.orgType,
+        licence: org.licenceTypes.join(', '),
+        status: statusBadge(org.status),
+        entitled: statusBadge(rel.entitled ? 'Yes':'No'),
+        configured: statusBadge(rel.configured ? 'Yes':'No'),
+        active: statusBadge(rel.active ? 'Active':'Inactive'),
+        traffic: statusBadge(rel.trafficBand || 'None'),
+        lastUsedAt: fmtDate(rel.lastUsedAt)
+      }));
+    }
+
+    function renderFeatures() {
+      const items = featureCatalogItems();
+      if (!state.selectedFeatureKey || !items.some(x => x.key === state.selectedFeatureKey)) state.selectedFeatureKey = items[0]?.key || null;
+      const selected = items.find(x => x.key === state.selectedFeatureKey);
+
+      document.getElementById('featureList').innerHTML = items.length ? items.map(item => `
+        <div class="item-card ${selected?.key===item.key?'active':''}" data-key="${item.key}">
+          <div class="item-card-title">${item.name}</div>
+          <div class="item-card-desc">${item.description}</div>
+          <div style="margin-top:8px">${statusBadge(item.category)}</div>
+        </div>`).join('') : '<div class="empty">No matching items.</div>';
+      document.querySelectorAll('#featureList .item-card').forEach(card => card.onclick = () => {
+        state.selectedFeatureKey = card.dataset.key;
+        renderFeatures();
+      });
+
+      const panel = document.getElementById('featureHeaderPanel');
+      if (!selected) {
+        panel.innerHTML = '<div class="empty">Select a feature to view organisations with access.</div>';
+        renderTable('featureOrgTable', [['name','Organisation']], [], null);
+        return;
+      }
+      const rows = orgRowsForFeature(selected);
+      const entitledCount = rows.filter(r=>r.entitled.includes('Yes')).length;
+      const configuredCount = rows.filter(r=>r.configured.includes('Yes')).length;
+      const activeCount = rows.filter(r=>r.active.includes('Active')).length;
+      const trafficCount = rows.filter(r=>!r.traffic.includes('None')).length;
+      panel.innerHTML = `
+        <div class="split-head">
+          <div>
+            <h2>${selected.name}</h2>
+            <div class="subtitle">${selected.description}</div>
+          </div>
+          <div>${statusBadge(selected.category)}</div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div class="muted">Entitled</div><div class="n">${entitledCount}</div></div>
+          <div class="mini-stat"><div class="muted">Configured</div><div class="n">${configuredCount}</div></div>
+          <div class="mini-stat"><div class="muted">Active</div><div class="n">${activeCount}</div></div>
+          <div class="mini-stat"><div class="muted">With traffic</div><div class="n">${trafficCount}</div></div>
+        </div>
+      `;
+      document.getElementById('featureOrgCount').textContent = `${rows.length} organisations`;
+      renderTable('featureOrgTable', [
+        ['name','Organisation'], ['orgType','Org Type'], ['licence','Licence'], ['status','Status'], ['entitled','Entitled'], ['configured','Configured'], ['active','Active'], ['traffic','Traffic'], ['lastUsedAt','Last Used']
+      ], rows, row => {
+        state.selectedOrgId = row.id;
+        switchPage('organisations');
+        renderOrganisations();
+      });
+    }
+
+    function relationshipRowsForOrg(org, relationshipType) {
+      const rows = [];
+      if (relationshipType === 'All' || relationshipType === 'Caller') org.relationships.callers.forEach(x => rows.push({ type: 'Caller', ...x }));
+      if (relationshipType === 'All' || relationshipType === 'Distributor') org.relationships.distributors.forEach(x => rows.push({ type: 'Distributor', ...x }));
+      if (relationshipType === 'All' || relationshipType === 'Service Consumed') org.relationships.servicesConsumed.forEach(x => rows.push({ type: 'Service Consumed', ...x }));
+      if (relationshipType === 'All' || relationshipType === 'Service Provided') org.relationships.servicesProvided.forEach(x => rows.push({ type: 'Service Provided', ...x }));
+      if (relationshipType === 'All' || relationshipType === 'Quote Engine') org.quoteEngines.forEach(x => rows.push({ type: 'Quote Engine', ...x }));
+      return rows;
+    }
+
+    function getServicePrimaryRows() {
+      if (state.serviceMode === 'org') {
+        const q = state.serviceFilters.orgSearch;
+        return sortRows(state.data.orgs.filter(org => {
+          if (q && !`${org.name} ${org.orgId} ${org.scid}`.toLowerCase().includes(q)) return false;
+          return relationshipRowsForOrg(org, state.serviceFilters.relationshipType).length > 0;
+        }).map(org => ({
+          id: org.id,
+          name: org.name,
+          orgType: org.orgType,
+          licences: org.licenceTypes.join(', '),
+          relationships: relationshipRowsForOrg(org, state.serviceFilters.relationshipType).length,
+          traffic: statusBadge(org.trafficBand),
+          lastSeenAt: fmtDate(org.lastSeenAt)
+        })), state.serviceSort);
+      }
+
+      const relType = state.serviceFilters.relationshipType;
+      const buckets = [];
+      if (relType === 'All' || relType === 'Caller') state.data.catalog.callers.forEach(x => buckets.push({ name: x.name, type: 'Caller' }));
+      if (relType === 'All' || relType === 'Distributor') state.data.catalog.distributors.forEach(x => buckets.push({ name: x.name, type: 'Distributor' }));
+      if (relType === 'All' || relType === 'Service Consumed' || relType === 'Service Provided') state.data.catalog.services.forEach(x => {
+        if (relType === 'All' || relType === 'Service Consumed') buckets.push({ name: x.name, type: 'Service Consumed' });
+        if (relType === 'All' || relType === 'Service Provided') buckets.push({ name: x.name, type: 'Service Provided' });
+      });
+      if (relType === 'All' || relType === 'Quote Engine') state.data.catalog.quoteEngines.forEach(x => buckets.push({ name: x.name, type: 'Quote Engine' }));
+
+      const q = state.serviceFilters.orgSearch;
+      return sortRows(buckets.filter(b => !q || `${b.name} ${b.type}`.toLowerCase().includes(q)).map(bucket => {
+        const connected = state.data.orgs.filter(org => relationshipRowsForOrg(org, bucket.type).some(r => r.name === bucket.name));
+        return {
+          id: bucket.type + '|' + bucket.name,
+          name: bucket.name,
+          type: bucket.type,
+          orgCount: connected.length,
+          activeCount: connected.filter(o => relationshipRowsForOrg(o, bucket.type).find(r => r.name===bucket.name && r.active)).length,
+          withTraffic: connected.filter(o => relationshipRowsForOrg(o, bucket.type).find(r => r.name===bucket.name && r.hasTraffic)).length
+        };
+      }).filter(x => x.orgCount > 0), state.serviceSort);
+    }
+
+    function renderServices() {
+      const rows = getServicePrimaryRows();
+      const title = state.serviceMode === 'org' ? 'Organisation results' : 'Relationship results';
+      document.getElementById('servicePrimaryTitle').textContent = title;
+      document.getElementById('servicePrimaryCount').textContent = `${rows.length} rows`;
+      if (!state.selectedServiceEntity || !rows.some(r => r.id === state.selectedServiceEntity)) state.selectedServiceEntity = rows[0]?.id || null;
+
+      if (state.serviceMode === 'org') {
+        renderTable('servicePrimaryTable', [
+          ['name','Organisation'], ['orgType','Org Type'], ['licences','Licence'], ['relationships','Relationships'], ['traffic','Traffic'], ['lastSeenAt','Last Seen']
+        ], rows, row => { state.selectedServiceEntity = row.id; renderServices(); }, state.selectedServiceEntity);
+
+        const org = state.data.orgs.find(x => x.id === state.selectedServiceEntity);
+        const panel = document.getElementById('serviceSecondaryPanel');
+        if (!org) {
+          panel.innerHTML = '<div class="empty">Select an organisation or relationship to inspect connected services.</div>';
+          return;
+        }
+        const groups = [
+          ['Callers', org.relationships.callers],
+          ['Distributors', org.relationships.distributors],
+          ['Services Consumed', org.relationships.servicesConsumed],
+          ['Services Provided', org.relationships.servicesProvided],
+          ['Quote Engines', org.quoteEngines]
+        ].filter(([_, arr]) => arr.length);
+        panel.innerHTML = `
+          <div class="detail-header">
+            <div>
+              <h2>${org.name}</h2>
+              <div class="subtitle">${org.orgType} · ${org.licenceTypes.join(', ')}</div>
+            </div>
+            <div class="row-badges">${statusBadge(org.status)} ${statusBadge(org.trafficBand)}</div>
+          </div>
+          ${groups.map(([title, arr]) => `
+            <div style="margin-bottom:14px">
+              <h3 style="margin-bottom:8px">${title}</h3>
+              <div class="table-wrap" style="max-height:180px;">
+                <table>
+                  <thead><tr><th>Name</th><th>Active</th><th>Traffic</th><th>Last Used</th></tr></thead>
+                  <tbody>
+                    ${arr.map(item => `<tr><td>${item.name}</td><td>${statusBadge(item.active ? 'Active':'Inactive')}</td><td>${statusBadge(item.trafficBand)}</td><td>${fmtDate(item.lastUsedAt)}</td></tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>`).join('')}
+        `;
+      } else {
+        renderTable('servicePrimaryTable', [
+          ['name','Relationship'], ['type','Type'], ['orgCount','Connected Orgs'], ['activeCount','Active Orgs'], ['withTraffic','With Traffic']
+        ], rows, row => { state.selectedServiceEntity = row.id; renderServices(); }, state.selectedServiceEntity);
+
+        const panel = document.getElementById('serviceSecondaryPanel');
+        const selected = rows.find(x => x.id === state.selectedServiceEntity);
+        if (!selected) {
+          panel.innerHTML = '<div class="empty">Select a relationship type result to inspect connected organisations.</div>';
+          return;
+        }
+        const connected = state.data.orgs.filter(org => relationshipRowsForOrg(org, selected.type).some(r => r.name === selected.name)).map(org => {
+          const rel = relationshipRowsForOrg(org, selected.type).find(r => r.name === selected.name);
+          return {
+            id: org.id,
+            name: org.name,
+            orgType: org.orgType,
+            licence: org.licenceTypes.join(', '),
+            active: statusBadge(rel.active ? 'Active':'Inactive'),
+            traffic: statusBadge(rel.trafficBand),
+            lastUsedAt: fmtDate(rel.lastUsedAt)
+          };
+        });
+        panel.innerHTML = `
+          <div class="detail-header">
+            <div>
+              <h2>${selected.name}</h2>
+              <div class="subtitle">${selected.type} relationship</div>
+            </div>
+            <div class="row-badges">${statusBadge(selected.type)}</div>
+          </div>
+          <div class="mini-stats">
+            <div class="mini-stat"><div class="muted">Connected orgs</div><div class="n">${selected.orgCount}</div></div>
+            <div class="mini-stat"><div class="muted">Active orgs</div><div class="n">${selected.activeCount}</div></div>
+            <div class="mini-stat"><div class="muted">With traffic</div><div class="n">${selected.withTraffic}</div></div>
+          </div>
+          <div class="table-wrap" style="margin-top:12px; max-height:460px;">
+            <table>
+              <thead><tr><th>Organisation</th><th>Org Type</th><th>Licence</th><th>Active</th><th>Traffic</th><th>Last Used</th></tr></thead>
+              <tbody>
+                ${connected.map(org => `<tr class="clickable" data-org="${org.id}"><td><span class="linkish">${org.name}</span></td><td>${org.orgType}</td><td>${org.licence}</td><td>${org.active}</td><td>${org.traffic}</td><td>${org.lastUsedAt}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+        panel.querySelectorAll('[data-org]').forEach(row => row.onclick = () => {
+          state.selectedOrgId = row.dataset.org;
+          switchPage('organisations');
+          renderOrganisations();
+        });
+      }
+    }
+
+    function sortRows(rows, sort) {
+      return [...rows].sort((a,b) => {
+        const av = rawComparable(a[sort.key]);
+        const bv = rawComparable(b[sort.key]);
+        if (av < bv) return sort.dir === 'asc' ? -1 : 1;
+        if (av > bv) return sort.dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    function rawComparable(v) {
+      if (v == null) return '';
+      if (typeof v === 'number') return v;
+      return String(v).replace(/<[^>]+>/g, '').toLowerCase();
+    }
+
+    function renderTable(tableId, columns, rows, onRowClick, selectedId = null) {
+      const table = document.getElementById(tableId);
+      const thead = table.querySelector('thead');
+      const tbody = table.querySelector('tbody');
+      const sortState = tableId === 'orgTable' ? state.orgSort : tableId === 'featureOrgTable' ? state.featureSort : state.serviceSort;
+      thead.innerHTML = `<tr>${columns.map(([key, label]) => `<th data-key="${key}">${label}${sortState.key===key ? (sortState.dir==='asc'?' ▲':' ▼') : ''}</th>`).join('')}</tr>`;
+      tbody.innerHTML = rows.length ? rows.map(row => `
+        <tr class="${onRowClick ? 'clickable' : ''}" data-id="${row.id || ''}" ${selectedId && row.id===selectedId ? 'style="background:#f6f9ff"' : ''}>
+          ${columns.map(([key]) => `<td>${row[key] ?? '—'}</td>`).join('')}
+        </tr>`).join('') : `<tr><td colspan="${columns.length}"><div class="empty">No matching results.</div></td></tr>`;
+      thead.querySelectorAll('th').forEach(th => th.onclick = () => {
+        const key = th.dataset.key;
+        if (sortState.key === key) sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+        else { sortState.key = key; sortState.dir = 'asc'; }
+        if (tableId === 'orgTable') renderOrganisations();
+        else if (tableId === 'featureOrgTable') renderFeatures();
+        else renderServices();
+      });
+      if (onRowClick) tbody.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = () => {
+        const row = rows.find(x => String(x.id) === tr.dataset.id);
+        if (row) onRowClick(row);
+      });
+    }
+
+    function renderAll() { renderOrganisations(); renderFeatures(); renderServices(); }
+
+    function init() {
+      state.data = generateData();
+      state.selectedOrgId = state.data.orgs[0]?.id || null;
+      state.selectedFeatureKey = state.data.catalog.features[0]?.key || null;
+      setUpFilters();
+      syncFilterUI();
+      renderAll();
+      document.querySelectorAll('.nav-item[data-page]').forEach(el => el.onclick = () => switchPage(el.dataset.page));
+    }
+
+    init();
+  </script>
+</body>
+</html>
